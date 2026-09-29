@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gmail Interactive Visual Lesson & Simulation</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Google Sans', 'Roboto', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            gmail: {
+              red: '#ea4335',
+              blue: '#1a73e8',
+              hoverblue: '#1557b0',
+              bg: '#f6f8fc',
+              border: '#e0e0e0',
+              graytext: '#5f6368',
+              sidebar: '#f2f6fc',
+              selected: '#c2e7ff',
+              hover: '#f1f3f4',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Google Sans', 'Roboto', sans-serif;
+      background-color: #f8fafc;
+      user-select: none;
+    }
+
+    /* Targetable area highlights for quiz identification */
+    .selectable-region {
+      position: relative;
+      border: 2px dashed transparent;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .selectable-region:hover {
+      border-color: #1a73e8;
+      background-color: rgba(26, 115, 232, 0.05);
+    }
+    .selectable-region.selected-active {
+      border-color: #ea4335 !important;
+      background-color: rgba(234, 67, 53, 0.1) !important;
+      box-shadow: 0 0 0 4px rgba(234, 67, 53, 0.2);
+    }
+
+    /* Pulsing halo for guided steps */
+    .guide-pulse {
+      animation: pulse-border 1.8s infinite;
+    }
+    @keyframes pulse-border {
+      0% { box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.6); }
+      70% { box-shadow: 0 0 0 10px rgba(26, 115, 232, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(26, 115, 232, 0); }
+    }
+
+    /* Movable / Draggable Selection Overlay Box */
+    .draggable-target-box {
+      border: 3px dashed #ea4335;
+      background-color: rgba(234, 67, 53, 0.15);
+      box-shadow: 0 0 15px rgba(234, 67, 53, 0.3);
+      backdrop-filter: blur(1px);
+      cursor: move;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .draggable-target-box.oval-mode {
+      border-radius: 9999px;
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #aaa;
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-gray-800">
+
+  <!-- TOP TEACHER / LESSON NAVIGATION BAR -->
+  <header class="bg-slate-900 text-white px-4 py-2.5 flex flex-wrap items-center justify-between shadow-md z-30 shrink-0">
+    <div class="flex items-center space-x-3">
+      <div class="bg-gmail-red text-white p-2 rounded-lg flex items-center justify-center font-bold">
+        <i class="fa-solid fa-envelope text-lg"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-base md:text-lg leading-tight">Gmail Skills Simulation & Visual Lesson</h1>
+        <p class="text-xs text-slate-400">Interactive Email Navigation & Components Masterclass</p>
+      </div>
+    </div>
+
+    <!-- Step Progress Indicators -->
+    <div class="hidden lg:flex items-center space-x-1.5 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">
+      <div id="step-pill-1" class="step-pill flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white">
+        <span>1. Sign In</span>
+      </div>
+      <i class="fa-solid fa-chevron-right text-slate-600 text-[10px]"></i>
+      <div id="step-pill-2" class="step-pill flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-700 text-slate-400">
+        <span>2. Inbox</span>
+      </div>
+      <i class="fa-solid fa-chevron-right text-slate-600 text-[10px]"></i>
+      <div id="step-pill-3" class="step-pill flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-700 text-slate-400">
+        <span>3. Sender</span>
+      </div>
+      <i class="fa-solid fa-chevron-right text-slate-600 text-[10px]"></i>
+      <div id="step-pill-4" class="step-pill flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-700 text-slate-400">
+        <span>4. Recipient</span>
+      </div>
+      <i class="fa-solid fa-chevron-right text-slate-600 text-[10px]"></i>
+      <div id="step-pill-5" class="step-pill flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-700 text-slate-400">
+        <span>5. Subject</span>
+      </div>
+      <i class="fa-solid fa-chevron-right text-slate-600 text-[10px]"></i>
+      <div id="step-pill-6" class="step-pill flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-700 text-slate-400">
+        <span>6. Body</span>
+      </div>
+    </div>
+
+    <!-- Teacher Prompt & Data Tracker Widget -->
+    <div class="flex items-center space-x-3 text-xs md:text-sm">
+      <div class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 flex items-center space-x-3">
+        <div class="flex items-center space-x-1.5">
+          <i class="fa-solid fa-hand-holding-hand text-amber-400"></i>
+          <span class="text-slate-300 font-medium">Prompts Given:</span>
+          <span id="prompt-count-display" class="font-bold text-amber-400 text-base">0</span>
+        </div>
+        <div class="h-4 w-px bg-slate-700"></div>
+        <button onclick="addTeacherPrompt()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 hover:text-amber-200 px-2 py-0.5 rounded font-semibold transition active:scale-95" title="Record +1 Prompt Given">
+          +1 Prompt
+        </button>
+      </div>
+
+      <button onclick="openDataModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg font-medium flex items-center space-x-1.5 transition">
+        <i class="fa-solid fa-chart-pie text-sky-400"></i>
+        <span class="hidden sm:inline">Data Log</span>
+      </button>
+
+      <button onclick="restartLesson()" class="bg-rose-600/80 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg font-medium flex items-center space-x-1.5 transition">
+        <i class="fa-solid fa-rotate-left"></i>
+        <span class="hidden sm:inline">Reset</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE SPLIT (Left: Gmail Simulator / Right: Interactive Lesson Panel) -->
+  <div class="flex-grow flex flex-col md:flex-row overflow-hidden relative">
+
+    <!-- SIMULATED GMAIL WORKSPACE (LEFT / MAIN CONTENT) -->
+    <main class="flex-grow bg-white flex flex-col relative overflow-hidden shadow-inner border-r border-gray-200">
+
+      <!-- ================= VIEW A: GOOGLE LOGIN SCREEN ================= -->
+      <div id="view-login" class="w-full h-full flex items-center justify-center bg-gray-50 p-4">
+        <div class="bg-white border border-gray-200 rounded-2xl p-8 md:p-10 max-w-md w-full shadow-lg text-center relative guide-pulse">
+          
+          <!-- Google Logo SVG -->
+          <div class="flex justify-center mb-6">
+            <svg class="w-12 h-12" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+          </div>
+
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">Sign in</h2>
+          <p class="text-gray-600 text-sm mb-6">to continue to Gmail</p>
+
+          <form onsubmit="handleLoginSubmit(event)" class="space-y-4 text-left">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Email or phone</label>
+              <input type="email" id="login-email-input" value="student.demo@gmail.com" required
+                     class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-gray-800 font-medium text-sm">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+              <input type="password" id="login-pass-input" value="••••••••••••" required
+                     class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-gray-800 font-medium text-sm">
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+              <a href="#" onclick="return false;" class="text-sm font-semibold text-blue-600 hover:underline">Forgot email?</a>
+              <button type="submit" id="btn-login-next"
+                      class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg text-sm shadow transition flex items-center space-x-2">
+                <span>Next</span>
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+              </button>
+            </div>
+          </form>
+
+          <div class="mt-8 pt-4 border-t border-gray-100 text-xs text-gray-500">
+            <span>Not your computer? Use Guest mode to sign in privately.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= VIEW B: FULL GMAIL INTERFACE ================= -->
+      <div id="view-gmail" class="w-full h-full flex flex-col hidden bg-gmail-bg">
+
+        <!-- Gmail Top Header Bar -->
+        <header class="bg-white px-4 py-2 border-b border-gmail-border flex items-center justify-between shrink-0">
+          <!-- Left Logo & Menu -->
+          <div class="flex items-center space-x-4">
+            <button class="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition">
+              <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+            <div class="flex items-center space-x-2">
+              <svg class="w-8 h-8" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <span class="text-xl font-medium text-gray-700">Gmail</span>
+            </div>
+          </div>
+
+          <!-- Middle Search Bar -->
+          <div class="flex-1 max-w-2xl mx-4">
+            <div class="bg-slate-100 hover:bg-slate-200/80 focus-within:bg-white focus-within:shadow-md transition rounded-full px-4 py-2 flex items-center space-x-3 border border-transparent focus-within:border-gray-200">
+              <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
+              <input type="text" placeholder="Search mail" class="bg-transparent w-full focus:outline-none text-sm text-gray-800">
+              <i class="fa-solid fa-sliders text-gray-500 hover:text-gray-700 cursor-pointer"></i>
+            </div>
+          </div>
+
+          <!-- Right Profile Controls -->
+          <div class="flex items-center space-x-2">
+            <button class="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
+              <i class="fa-regular fa-circle-question text-lg"></i>
+            </button>
+            <button class="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
+              <i class="fa-solid fa-gear text-lg"></i>
+            </button>
+            <button class="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
+              <i class="fa-solid fa-grip-vertical text-lg"></i>
+            </button>
+            <div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-sm shadow">
+              S
+            </div>
+          </div>
+        </header>
+
+        <!-- Gmail Body Split: Left Navigation Sidebar + Right Content Area -->
+        <div class="flex-grow flex overflow-hidden">
+
+          <!-- Gmail Left Sidebar -->
+          <aside class="w-60 bg-gmail-bg p-3 flex flex-col justify-between shrink-0 border-r border-gmail-border hidden md:flex">
+            <div class="space-y-4">
+              <!-- Compose Button -->
+              <button class="bg-c2e7ff hover:shadow-md bg-[#c2e7ff] text-gray-800 font-medium px-5 py-3 rounded-2xl flex items-center space-x-3 transition active:scale-95 shadow">
+                <i class="fa-solid fa-pen text-lg text-gray-700"></i>
+                <span class="text-sm font-semibold">Compose</span>
+              </button>
+
+              <!-- Nav Menu Items -->
+              <nav class="space-y-1">
+                <a href="#" onclick="return false;" class="flex items-center justify-between px-4 py-2 rounded-r-full bg-[#d3e3fd] text-blue-900 font-bold text-sm">
+                  <div class="flex items-center space-x-4">
+                    <i class="fa-solid fa-inbox text-base"></i>
+                    <span>Inbox</span>
+                  </div>
+                  <span class="text-xs bg-blue-900 text-white px-2 py-0.5 rounded-full">1</span>
+                </a>
+
+                <a href="#" onclick="return false;" class="flex items-center space-x-4 px-4 py-2 rounded-r-full hover:bg-gmail-hover text-gray-700 font-medium text-sm">
+                  <i class="fa-regular fa-star text-base"></i>
+                  <span>Starred</span>
+                </a>
+
+                <a href="#" onclick="return false;" class="flex items-center space-x-4 px-4 py-2 rounded-r-full hover:bg-gmail-hover text-gray-700 font-medium text-sm">
+                  <i class="fa-regular fa-clock text-base"></i>
+                  <span>Snoozed</span>
+                </a>
+
+                <a href="#" onclick="return false;" class="flex items-center space-x-4 px-4 py-2 rounded-r-full hover:bg-gmail-hover text-gray-700 font-medium text-sm">
+                  <i class="fa-regular fa-paper-plane text-base"></i>
+                  <span>Sent</span>
+                </a>
+
+                <a href="#" onclick="return false;" class="flex items-center space-x-4 px-4 py-2 rounded-r-full hover:bg-gmail-hover text-gray-700 font-medium text-sm">
+                  <i class="fa-regular fa-file text-base"></i>
+                  <span>Drafts</span>
+                </a>
+              </nav>
+            </div>
+
+            <div class="pt-4 border-t border-gray-200 text-xs text-gray-500 flex items-center justify-between px-2">
+              <span>Labels</span>
+              <i class="fa-solid fa-plus cursor-pointer hover:text-gray-800"></i>
+            </div>
+          </aside>
+
+          <!-- Gmail Main Email Listing & Reader View Area -->
+          <section class="flex-grow bg-white m-0 md:m-2 rounded-xl border border-gray-200 overflow-hidden flex flex-col relative">
+
+            <!-- SUB-VIEW 1: INBOX EMAIL LIST -->
+            <div id="gmail-inbox-list" class="flex-grow flex flex-col overflow-y-auto">
+              <!-- Inbox Tabs Header -->
+              <div class="flex items-center border-b border-gray-200 bg-white sticky top-0 z-10">
+                <button class="flex items-center space-x-3 px-6 py-3 border-b-2 border-blue-600 text-blue-600 font-semibold text-sm">
+                  <i class="fa-solid fa-tag"></i>
+                  <span>Primary</span>
+                </button>
+                <button class="flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 font-medium text-sm">
+                  <i class="fa-solid fa-users"></i>
+                  <span>Social</span>
+                </button>
+                <button class="flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 font-medium text-sm">
+                  <i class="fa-solid fa-circle-info"></i>
+                  <span>Promotions</span>
+                </button>
+              </div>
+
+              <!-- Email List Items -->
+              <div class="divide-y divide-gray-100">
+                
+                <!-- TARGET UNREAD EMAIL ROW (Step 2 Interactive Element) -->
+                <div id="target-email-row" onclick="openTargetEmail()" 
+                     class="flex items-center px-4 py-3 bg-blue-50/70 hover:bg-blue-100/70 cursor-pointer transition guide-pulse border-l-4 border-blue-600">
+                  <div class="flex items-center space-x-3 text-gray-400 mr-4">
+                    <input type="checkbox" onclick="event.stopPropagation()" class="rounded border-gray-300">
+                    <i class="fa-regular fa-star hover:text-amber-400"></i>
+                  </div>
+                  
+                  <div class="w-44 font-bold text-gray-900 truncate text-sm">
+                    Ms. Johnson (Teacher)
+                  </div>
+
+                  <div class="flex-grow truncate text-sm pr-4">
+                    <span class="font-bold text-gray-900">Science Fair Project Details & Instructions</span>
+                    <span class="text-gray-500 font-normal"> — Hello Class, attached are the guidelines for the upcoming Science Fair on Friday...</span>
+                  </div>
+
+                  <div class="text-xs font-bold text-blue-700 whitespace-nowrap">
+                    9:15 AM
+                  </div>
+                </div>
+
+                <!-- Regular Unimportant Read Email Rows for Realism -->
+                <div class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer transition opacity-75">
+                  <div class="flex items-center space-x-3 text-gray-400 mr-4">
+                    <input type="checkbox" class="rounded border-gray-300">
+                    <i class="fa-regular fa-star"></i>
+                  </div>
+                  <div class="w-44 font-medium text-gray-700 truncate text-sm">
+                    School Library
+                  </div>
+                  <div class="flex-grow truncate text-sm pr-4 text-gray-600">
+                    <span class="font-medium text-gray-800">Reminder: Overdue Books Due Friday</span>
+                    <span class="text-gray-500"> — Please make sure to return all borrowed media center books before 3:00 PM...</span>
+                  </div>
+                  <div class="text-xs text-gray-500 whitespace-nowrap">
+                    Yesterday
+                  </div>
+                </div>
+
+                <div class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer transition opacity-75">
+                  <div class="flex items-center space-x-3 text-gray-400 mr-4">
+                    <input type="checkbox" class="rounded border-gray-300">
+                    <i class="fa-regular fa-star"></i>
+                  </div>
+                  <div class="w-44 font-medium text-gray-700 truncate text-sm">
+                    Art Club Officer
+                  </div>
+                  <div class="flex-grow truncate text-sm pr-4 text-gray-600">
+                    <span class="font-medium text-gray-800">Art Club Meeting Schedule Update</span>
+                    <span class="text-gray-500"> — Our meeting has been moved to Room 204. See you all on Thursday afternoon!</span>
+                  </div>
+                  <div class="text-xs text-gray-500 whitespace-nowrap">
+                    Oct 12
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- SUB-VIEW 2: OPENED EMAIL THREAD VIEW -->
+            <div id="gmail-thread-view" class="flex-grow flex flex-col hidden bg-white overflow-y-auto p-6 relative">
+
+              <!-- Email Action Bar -->
+              <div class="flex items-center justify-between pb-4 mb-4 border-b border-gray-200">
+                <div class="flex items-center space-x-4">
+                  <button onclick="backToInbox()" class="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition" title="Back to Inbox">
+                    <i class="fa-solid fa-arrow-left text-base"></i>
+                  </button>
+                  <div class="h-4 w-px bg-gray-300"></div>
+                  <i class="fa-solid fa-box-archive text-gray-600 hover:text-gray-900 cursor-pointer" title="Archive"></i>
+                  <i class="fa-solid fa-circle-exclamation text-gray-600 hover:text-gray-900 cursor-pointer" title="Report Spam"></i>
+                  <i class="fa-solid fa-trash-can text-gray-600 hover:text-gray-900 cursor-pointer" title="Delete"></i>
+                </div>
+                <div class="text-xs text-gray-500">
+                  1 of 12
+                </div>
+              </div>
+
+              <!-- SUBJECT LINE REGION (Targetable Region 3) -->
+              <div id="region-subject" onclick="handleRegionClick('subject')"
+                   class="selectable-region p-3 mb-4 rounded-lg">
+                <div class="flex items-center justify-between">
+                  <h1 class="text-xl md:text-2xl font-bold text-gray-900 leading-snug">
+                    Science Fair Project Details & Instructions
+                  </h1>
+                  <span class="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md font-medium">Inbox</span>
+                </div>
+                <span class="text-xs text-blue-600 font-semibold uppercase tracking-wider block mt-1">
+                  [Subject Line]
+                </span>
+              </div>
+
+              <!-- EMAIL HEADER REGION (Sender & Recipient) -->
+              <div class="flex items-start justify-between mb-6 pb-4 border-b border-gray-100">
+                <div class="flex items-start space-x-3.5">
+                  <!-- Sender Avatar -->
+                  <div class="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-lg shadow">
+                    J
+                  </div>
+
+                  <div class="space-y-1">
+                    <!-- SENDER REGION (Targetable Region 1) -->
+                    <div id="region-sender" onclick="handleRegionClick('sender')"
+                         class="selectable-region p-1.5 inline-block">
+                      <div class="text-sm font-bold text-gray-900">
+                        Ms. Johnson <span class="text-gray-500 font-normal">&lt;m.johnson@oakridge.edu&gt;</span>
+                      </div>
+                      <span class="text-xs text-emerald-600 font-semibold uppercase tracking-wider block">
+                        [Sender / From]
+                      </span>
+                    </div>
+
+                    <!-- RECIPIENT REGION (Targetable Region 2) -->
+                    <div id="region-recipient" onclick="handleRegionClick('recipient')"
+                         class="selectable-region p-1.5 inline-block block">
+                      <div class="text-xs text-gray-600 flex items-center space-x-1">
+                        <span>to me</span>
+                        <i class="fa-solid fa-caret-down text-[10px]"></i>
+                        <span class="text-gray-400">(&lt;student.demo@gmail.com&gt;)</span>
+                      </div>
+                      <span class="text-xs text-purple-600 font-semibold uppercase tracking-wider block">
+                        [Recipient / To]
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="text-xs text-gray-500 flex items-center space-x-2">
+                  <span>Oct 14, 2026, 9:15 AM</span>
+                  <i class="fa-regular fa-star text-gray-400 hover:text-amber-400 cursor-pointer"></i>
+                  <i class="fa-solid fa-reply text-gray-400 hover:text-gray-700 cursor-pointer"></i>
+                </div>
+              </div>
+
+              <!-- MESSAGE BODY REGION (Targetable Region 4) -->
+              <div id="region-body" onclick="handleRegionClick('body')"
+                   class="selectable-region p-4 rounded-xl min-h-[180px] bg-gray-50/50">
+                <div class="prose max-w-none text-gray-800 text-base leading-relaxed space-y-3">
+                  <p>Hello Class,</p>
+                  <p>Please review the attached project guidelines for our upcoming Science Fair taking place this Friday in the gymnasium.</p>
+                  <p>Make sure to choose your poster topic by tomorrow afternoon and bring your project proposal to class!</p>
+                  <p class="pt-2 font-medium">Best regards,<br>Ms. Johnson</p>
+                </div>
+                <span class="text-xs text-rose-600 font-semibold uppercase tracking-wider block mt-4">
+                  [Message Body]
+                </span>
+              </div>
+
+            </div>
+
+          </section>
+        </div>
+
+      </div>
+
+      <!-- MOVABLE / DRAGGABLE TRANSPARENT SELECTION OVAL / BOX -->
+      <div id="floating-selection-tool" 
+           class="draggable-target-box absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-24 hidden z-20 flex items-center justify-center p-2 rounded-xl transition-transform"
+           style="touch-action: none;">
+        <span class="text-xs font-extrabold text-rose-700 bg-white/90 px-2 py-1 rounded shadow pointer-events-none uppercase tracking-wide">
+          ⭕ Drag Me Over Target Area
+        </span>
+      </div>
+
+    </main>
+
+    <!-- LESSON & COMPREHENSION QUIZ SIDE PANEL (RIGHT) -->
+    <aside class="w-full md:w-96 bg-slate-900 text-white p-5 flex flex-col justify-between shrink-0 shadow-2xl z-20 overflow-y-auto border-t md:border-t-0 md:border-l border-slate-800">
+      
+      <div>
+        <!-- Step Header Badge -->
+        <div class="flex items-center justify-between mb-4">
+          <span id="lesson-step-badge" class="bg-blue-600/30 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+            Step 1 of 6
+          </span>
+          <span id="trial-status-badge" class="text-xs font-semibold text-slate-400">
+            In Progress
+          </span>
+        </div>
+
+        <!-- Task Title -->
+        <h2 id="lesson-task-title" class="text-xl font-bold text-white mb-2 leading-tight">
+          Sign In to Your Gmail Account
+        </h2>
+
+        <!-- Task Description / Visual Guide Instructions -->
+        <div id="lesson-task-desc" class="text-sm text-slate-300 leading-relaxed mb-5 bg-slate-800/80 p-3.5 rounded-xl border border-slate-700">
+          Click the blue <span class="text-blue-400 font-semibold">Next</span> button on the sign-in box to open your Gmail inbox.
+        </div>
+
+        <!-- Multiple Choice Options Box (Visible for steps 3-6) -->
+        <div id="quiz-options-container" class="space-y-2.5 hidden mb-6">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+            Select the Correct Component:
+          </label>
+
+          <button onclick="submitQuizChoice('sender')" id="opt-sender" class="quiz-option-btn w-full text-left p-3 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 transition flex items-center space-x-3 text-sm">
+            <span class="w-6 h-6 rounded-full bg-slate-700 text-slate-200 flex items-center justify-center font-bold text-xs shrink-0">A</span>
+            <span class="font-medium text-slate-200">Sender (Who sent the email)</span>
+          </button>
+
+          <button onclick="submitQuizChoice('recipient')" id="opt-recipient" class="quiz-option-btn w-full text-left p-3 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 transition flex items-center space-x-3 text-sm">
+            <span class="w-6 h-6 rounded-full bg-slate-700 text-slate-200 flex items-center justify-center font-bold text-xs shrink-0">B</span>
+            <span class="font-medium text-slate-200">Recipient (Who gets the email)</span>
+          </button>
+
+          <button onclick="submitQuizChoice('subject')" id="opt-subject" class="quiz-option-btn w-full text-left p-3 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 transition flex items-center space-x-3 text-sm">
+            <span class="w-6 h-6 rounded-full bg-slate-700 text-slate-200 flex items-center justify-center font-bold text-xs shrink-0">C</span>
+            <span class="font-medium text-slate-200">Subject Line (Main title topic)</span>
+          </button>
+
+          <button onclick="submitQuizChoice('body')" id="opt-body" class="quiz-option-btn w-full text-left p-3 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 transition flex items-center space-x-3 text-sm">
+            <span class="w-6 h-6 rounded-full bg-slate-700 text-slate-200 flex items-center justify-center font-bold text-xs shrink-0">D</span>
+            <span class="font-medium text-slate-200">Message Body (Main text)</span>
+          </button>
+        </div>
+
+        <!-- Feedback Alert Panel -->
+        <div id="feedback-panel" class="hidden p-4 rounded-xl mb-4 border transition-all text-sm">
+          <div class="flex items-start space-x-3">
+            <i id="feedback-icon" class="fa-solid fa-circle-check text-lg mt-0.5"></i>
+            <div>
+              <h4 id="feedback-title" class="font-bold text-base mb-1">Great Job!</h4>
+              <p id="feedback-text" class="text-xs leading-relaxed opacity-90">Correct identification.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Footer Buttons -->
+      <div class="pt-4 border-t border-slate-800 space-y-2">
+        <button id="btn-next-step" onclick="advanceStep()" disabled
+                class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-xl transition shadow-lg flex items-center justify-center space-x-2">
+          <span>Continue to Next Step</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+
+        <button onclick="giveHintPrompt()" id="btn-hint"
+                class="w-full bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-semibold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-2 transition">
+          <i class="fa-solid fa-lightbulb text-amber-400"></i>
+          <span>Need a Hint? (Uses Teacher Prompt)</span>
+        </button>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- TEACHER OBSERVATION DATA COLLECTION MODAL -->
+  <div id="data-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 text-gray-800">
+      
+      <div class="flex items-center justify-between pb-4 mb-4 border-b border-gray-100">
+        <div class="flex items-center space-x-2 text-blue-600">
+          <i class="fa-solid fa-clipboard-check text-2xl"></i>
+          <h3 class="text-xl font-bold text-gray-900">Lesson Observation Record</h3>
+        </div>
+        <button onclick="closeDataModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-sm">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-gray-50 p-3 rounded-xl border border-gray-200">
+            <span class="text-xs text-gray-500 block font-medium">Steps Completed</span>
+            <span id="data-completed-count" class="text-2xl font-extrabold text-blue-600">0 / 6</span>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-xl border border-gray-200">
+            <span class="text-xs text-gray-500 block font-medium">Total Prompts Needed</span>
+            <span id="data-prompt-count" class="text-2xl font-extrabold text-amber-500">0</span>
+          </div>
+        </div>
+
+        <div class="border border-gray-200 rounded-xl overflow-hidden">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-100 text-gray-700 font-bold border-b border-gray-200">
+              <tr>
+                <th class="p-2.5">Step</th>
+                <th class="p-2.5">Task</th>
+                <th class="p-2.5 text-center">Prompts</th>
+                <th class="p-2.5 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody id="data-table-body" class="divide-y divide-gray-100 font-medium">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl text-xs text-blue-900 leading-relaxed">
+          <strong>Criterion Goal:</strong> Target is &le; 4 prompts total across all steps for independent task completion.
+        </div>
+      </div>
+
+      <div class="pt-5 mt-4 border-t border-gray-100 flex justify-between items-center">
+        <button onclick="copyDataReport()" class="text-blue-600 hover:text-blue-800 font-bold text-xs flex items-center space-x-1">
+          <i class="fa-regular fa-copy"></i>
+          <span>Copy Summary</span>
+        </button>
+        <button onclick="closeDataModal()" class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2 rounded-xl text-sm font-semibold">
+          Close Record
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* ================= APP STATE MANAGEMENT ================= */
+    let currentStep = 1; // 1: Login, 2: Inbox, 3: Sender, 4: Recipient, 5: Subject, 6: Body
+    let promptsCount = 0;
+    let selectedRegion = null;
+    let stepPrompts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+    let stepCompleted = { 1: false, 2: false, 3: false, 4: false, 5: false, 6: false };
+
+    const stepsConfig = {
+      1: {
+        title: "Step 1: Sign In to Gmail",
+        badge: "Step 1 of 6",
+        desc: "Practice entering email credentials. Click the blue <strong class='text-blue-400'>Next</strong> button to log in.",
+        hasQuiz: false,
+        targetRegion: null
+      },
+      2: {
+        title: "Step 2: Open Inbox Email",
+        badge: "Step 2 of 6",
+        desc: "Look at your Gmail Inbox. Click on the unread email from <strong class='text-blue-400'>Ms. Johnson</strong> to open it.",
+        hasQuiz: false,
+        targetRegion: null
+      },
+      3: {
+        title: "Step 3: Identify the SENDER",
+        badge: "Step 3 of 6",
+        desc: "Who wrote and sent this message? Click on the <strong class='text-emerald-400'>Sender</strong> in the email or select choice <strong>A</strong>.",
+        hasQuiz: true,
+        correctOption: "sender"
+      },
+      4: {
+        title: "Step 4: Identify the RECIPIENT",
+        badge: "Step 4 of 6",
+        desc: "Who received this email? Click on the <strong class='text-purple-400'>Recipient (to me)</strong> or select choice <strong>B</strong>.",
+        hasQuiz: true,
+        correctOption: "recipient"
+      },
+      5: {
+        title: "Step 5: Identify the SUBJECT LINE",
+        badge: "Step 5 of 6",
+        desc: "Where is the title describing what the email is about? Click the <strong class='text-blue-400'>Subject Line</strong> or select choice <strong>C</strong>.",
+        hasQuiz: true,
+        correctOption: "subject"
+      },
+      6: {
+        title: "Step 6: Identify the MESSAGE BODY",
+        badge: "Step 6 of 6",
+        desc: "Where is the main written text of the email? Click the <strong class='text-rose-400'>Message Body</strong> paragraph or select choice <strong>D</strong>.",
+        hasQuiz: true,
+        correctOption: "body"
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderStepView();
+      setupDraggableOverlay();
+    });
+
+    /* ================= STEP RENDERER ================= */
+    function renderStepView() {
+      const config = stepsConfig[currentStep];
+
+      // Update Top Nav Step Pills
+      for (let i = 1; i <= 6; i++) {
+        const pill = document.getElementById(`step-pill-${i}`);
+        if (!pill) continue;
+        if (i < currentStep || stepCompleted[i]) {
+          pill.className = "step-pill flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-600 text-white";
+        } else if (i === currentStep) {
+          pill.className = "step-pill flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white";
+        } else {
+          pill.className = "step-pill flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-700 text-slate-400";
+        }
+      }
+
+      // Update Side Panel Info
+      document.getElementById('lesson-step-badge').innerText = config.badge;
+      document.getElementById('lesson-task-title').innerText = config.title;
+      document.getElementById('lesson-task-desc').innerHTML = config.desc;
+      document.getElementById('trial-status-badge').innerText = stepCompleted[currentStep] ? "Completed ✅" : "In Progress";
+
+      // Reset feedback and buttons
+      hideFeedback();
+      document.getElementById('btn-next-step').disabled = !stepCompleted[currentStep];
+
+      // Toggle Quiz Choices container
+      const quizContainer = document.getElementById('quiz-options-container');
+      if (config.hasQuiz) {
+        quizContainer.classList.remove('hidden');
+      } else {
+        quizContainer.classList.add('hidden');
+      }
+
+      // View visibility toggles
+      const viewLogin = document.getElementById('view-login');
+      const viewGmail = document.getElementById('view-gmail');
+      const inboxList = document.getElementById('gmail-inbox-list');
+      const threadView = document.getElementById('gmail-thread-view');
+      const floatingTool = document.getElementById('floating-selection-tool');
+
+      if (currentStep === 1) {
+        viewLogin.classList.remove('hidden');
+        viewGmail.classList.add('hidden');
+        floatingTool.classList.add('hidden');
+      } else if (currentStep === 2) {
+        viewLogin.classList.add('hidden');
+        viewGmail.classList.remove('hidden');
+        inboxList.classList.remove('hidden');
+        threadView.classList.add('hidden');
+        floatingTool.classList.add('hidden');
+      } else {
+        viewLogin.classList.add('hidden');
+        viewGmail.classList.remove('hidden');
+        inboxList.classList.add('hidden');
+        threadView.classList.remove('hidden');
+        floatingTool.classList.remove('hidden');
+      }
+
+      // Clear highlights
+      clearRegionHighlights();
+    }
+
+    /* ================= LOGIN STEP 1 HANDLER ================= */
+    function handleLoginSubmit(event) {
+      event.preventDefault();
+      if (currentStep === 1) {
+        stepCompleted[1] = true;
+        showFeedback(true, "Successfully Signed In!", "You entered your credentials and accessed Gmail.");
+        document.getElementById('btn-next-step').disabled = false;
+        playAudioTone(600);
+      }
+    }
+
+    /* ================= INBOX STEP 2 HANDLER ================= */
+    function openTargetEmail() {
+      if (currentStep === 2) {
+        stepCompleted[2] = true;
+        showFeedback(true, "Inbox Opened!", "You located and opened the unread email from Ms. Johnson.");
+        document.getElementById('btn-next-step').disabled = false;
+        playAudioTone(700);
+      }
+    }
+
+    function backToInbox() {
+      if (currentStep > 2) {
+        currentStep = 2;
+        renderStepView();
+      }
+    }
+
+    /* ================= REGION & QUIZ SELECTION (STEPS 3-6) ================= */
+    function handleRegionClick(regionKey) {
+      if (currentStep < 3) return;
+
+      selectedRegion = regionKey;
+      highlightSelectedRegion(regionKey);
+
+      // Check correctness
+      const currentConfig = stepsConfig[currentStep];
+      if (currentConfig && currentConfig.correctOption === regionKey) {
+        stepCompleted[currentStep] = true;
+        showFeedback(true, "Correct Selection!", `You accurately selected the ${regionKey.toUpperCase()} of the email.`);
+        document.getElementById('btn-next-step').disabled = false;
+        playAudioTone(800);
+      } else {
+        showFeedback(false, "Try Again", `That is the ${regionKey.toUpperCase()}. Look closely at the step instructions.`);
+        playAudioTone(300);
+      }
+    }
+
+    function submitQuizChoice(optionKey) {
+      handleRegionClick(optionKey);
+    }
+
+    function highlightSelectedRegion(regionKey) {
+      clearRegionHighlights();
+      const el = document.getElementById(`region-${regionKey}`);
+      if (el) {
+        el.classList.add('selected-active');
+      }
+    }
+
+    function clearRegionHighlights() {
+      const regions = document.querySelectorAll('.selectable-region');
+      regions.forEach(r => r.classList.remove('selected-active'));
+    }
+
+    /* ================= STEP ADVANCEMENT ================= */
+    function advanceStep() {
+      if (currentStep < 6) {
+        currentStep++;
+        renderStepView();
+      } else {
+        // All completed!
+        showFeedback(true, "Lesson Complete! 🎉", "You have successfully completed all 6 email identification steps!");
+        openDataModal();
+      }
+    }
+
+    /* ================= TEACHER PROMPT COUNTER ================= */
+    function addTeacherPrompt() {
+      promptsCount++;
+      stepPrompts[currentStep] = (stepPrompts[currentStep] || 0) + 1;
+      document.getElementById('prompt-count-display').innerText = promptsCount;
+    }
+
+    function giveHintPrompt() {
+      addTeacherPrompt();
+      const config = stepsConfig[currentStep];
+      if (config.hasQuiz) {
+        highlightSelectedRegion(config.correctOption);
+        showFeedback(false, "Prompt Given", `Hint: Notice the glowing region on the email.`);
+      } else if (currentStep === 1) {
+        document.getElementById('btn-login-next').classList.add('guide-pulse');
+      } else if (currentStep === 2) {
+        document.getElementById('target-email-row').classList.add('guide-pulse');
+      }
+    }
+
+    /* ================= FEEDBACK PANEL UTILITY ================= */
+    function showFeedback(isSuccess, title, text) {
+      const panel = document.getElementById('feedback-panel');
+      const icon = document.getElementById('feedback-icon');
+      const titleEl = document.getElementById('feedback-title');
+      const textEl = document.getElementById('feedback-text');
+
+      panel.classList.remove('hidden', 'bg-emerald-950/80', 'border-emerald-700', 'text-emerald-200', 'bg-amber-950/80', 'border-amber-700', 'text-amber-200');
+
+      if (isSuccess) {
+        panel.classList.add('bg-emerald-950/80', 'border-emerald-700', 'text-emerald-200');
+        icon.className = "fa-solid fa-circle-check text-lg mt-0.5 text-emerald-400";
+      } else {
+        panel.classList.add('bg-amber-950/80', 'border-amber-700', 'text-amber-200');
+        icon.className = "fa-solid fa-triangle-exclamation text-lg mt-0.5 text-amber-400";
+      }
+
+      titleEl.innerText = title;
+      textEl.innerText = text;
+    }
+
+    function hideFeedback() {
+      document.getElementById('feedback-panel').classList.add('hidden');
+    }
+
+    /* ================= DATA COLLECTION MODAL ================= */
+    function openDataModal() {
+      const modal = document.getElementById('data-modal');
+      modal.classList.remove('hidden');
+
+      let completedCount = 0;
+      let tableRows = '';
+
+      for (let i = 1; i <= 6; i++) {
+        const isDone = stepCompleted[i];
+        if (isDone) completedCount++;
+        const pCount = stepPrompts[i] || 0;
+
+        tableRows += `
+          <tr class="hover:bg-gray-50">
+            <td class="p-2.5 font-bold">Step ${i}</td>
+            <td class="p-2.5">${stepsConfig[i].title}</td>
+            <td class="p-2.5 text-center font-bold text-amber-600">${pCount}</td>
+            <td class="p-2.5 text-right">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isDone ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'}">
+                ${isDone ? 'Completed' : 'Pending'}
+              </span>
+            </td>
+          </tr>
+        `;
+      }
+
+      document.getElementById('data-completed-count').innerText = `${completedCount} / 6`;
+      document.getElementById('data-prompt-count').innerText = promptsCount;
+      document.getElementById('data-table-body').innerHTML = tableRows;
+    }
+
+    function closeDataModal() {
+      document.getElementById('data-modal').classList.add('hidden');
+    }
+
+    function copyDataReport() {
+      const summary = `Gmail Navigation Lesson Report:\n- Steps Completed: ${Object.values(stepCompleted).filter(Boolean).length}/6\n- Total Prompts Required: ${promptsCount}\n- Trial Date: ${new Date().toLocaleDateString()}`;
+      navigator.clipboard.writeText(summary).then(() => {
+        showFeedback(true, "Copied!", "Summary report copied to clipboard.");
+      }).catch(() => {
+        document.execCommand('copy');
+      });
+    }
+
+    function restartLesson() {
+      currentStep = 1;
+      promptsCount = 0;
+      stepPrompts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+      stepCompleted = { 1: false, 2: false, 3: false, 4: false, 5: false, 6: false };
+      document.getElementById('prompt-count-display').innerText = '0';
+      renderStepView();
+    }
+
+    /* ================= DRAGGABLE OVERLAY TOOL ================= */
+    function setupDraggableOverlay() {
+      const tool = document.getElementById('floating-selection-tool');
+      let isDragging = false;
+      let offsetX, offsetY;
+
+      tool.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        offsetX = e.clientX - tool.getBoundingClientRect().left;
+        offsetY = e.clientY - tool.getBoundingClientRect().top;
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const container = tool.parentElement.getBoundingClientRect();
+        let x = e.clientX - container.left - offsetX;
+        let y = e.clientY - container.top - offsetY;
+
+        tool.style.left = `${x}px`;
+        tool.style.top = `${y}px`;
+        tool.style.transform = 'none';
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+    }
+
+    /* ================= SOUND EFFECT SYNTHESIZER ================= */
+    function playAudioTone(freq) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.25);
+      } catch (e) {
+        // Audio fallback silence
+      }
+    }
+  </script>
+</body>
+</html>
